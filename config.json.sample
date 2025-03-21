@@ -1,0 +1,16 @@
+{
+  "gitlab": {
+    "url": "https://gitlab.com/api/v4",
+    "token": ""
+  },
+  "openai": {
+    "api_key": ""
+  },
+  "projects": [
+    {
+      "id": "gitlabprojectid",
+      "name": "gitlabprojectname",
+      "output_dir": "./reviews"
+    }
+  ]
+}
