@@ -1,11 +1,19 @@
+import logging
+import json
 from fastapi import FastAPI, HTTPException
 from gitlab_client import GitlabClient
 from ai_analyzer import AIAnalyzer
-import json
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="GitLab MR Review API")
 
 # Load config file
+logger.info("Loading config...")
 with open("../config.json", "r") as f:
     CONFIG = json.load(f)
 
@@ -16,6 +24,7 @@ PROJECTS = CONFIG["projects"]
 
 gitlab_client = GitlabClient(GITLAB_URL, GITLAB_TOKEN)
 ai_analyzer = AIAnalyzer(OPENAI_API_KEY)
+logger.info(f"Config loaded. {len(PROJECTS)} project(s) configured.")
 
 
 # Format the review as markdown for the MR comment
@@ -30,13 +39,23 @@ def format_review_comment(mr_data, analysis) -> str:
 
 # Analyze MRs for all projects
 def analyze_all_projects():
+    logger.info("Starting MR analysis for all projects...")
     for project in PROJECTS:
+        logger.info(f"Fetching open MRs for project '{project['name']}' (id={project['id']})...")
         mrs = gitlab_client.get_open_mrs(project["id"])
+        logger.info(f"Found {len(mrs)} open MR(s) in '{project['name']}'.")
         for mr in mrs:
-            mr_data, mr_diff = gitlab_client.get_mr_details(project["id"], mr["iid"])
+            mr_iid = mr["iid"]
+            logger.info(f"Processing MR !{mr_iid}: '{mr['title']}'")
+            logger.info(f"  Fetching MR details and diffs for !{mr_iid}...")
+            mr_data, mr_diff = gitlab_client.get_mr_details(project["id"], mr_iid)
+            logger.info(f"  Running AI analysis for !{mr_iid}...")
             analysis = ai_analyzer.analyze_mr(mr_data, mr_diff)
             comment_body = format_review_comment(mr_data, analysis)
-            gitlab_client.post_mr_note(project["id"], mr_data["iid"], comment_body)
+            logger.info(f"  Posting review comment on !{mr_iid}...")
+            gitlab_client.post_mr_note(project["id"], mr_iid, comment_body)
+            logger.info(f"  Review posted on !{mr_iid}.")
+    logger.info("Finished analyzing all projects.")
 
 
 # REST API Endpoints
@@ -76,4 +95,5 @@ if __name__ == "__main__":
     analyze_all_projects()
     import uvicorn
 
+    logger.info("Starting uvicorn server on 0.0.0.0:8000...")
     uvicorn.run(app, host="0.0.0.0", port=8000)
