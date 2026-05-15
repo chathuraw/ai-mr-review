@@ -20,10 +20,11 @@ with open("../config.json", "r") as f:
 GITLAB_URL = CONFIG["gitlab"]["url"]
 GITLAB_TOKEN = CONFIG["gitlab"]["token"]
 OPENAI_API_KEY = CONFIG["openai"]["api_key"]
+OPENAI_BASE_URL = CONFIG["openai"].get("base_url")
 PROJECTS = CONFIG["projects"]
 
 gitlab_client = GitlabClient(GITLAB_URL, GITLAB_TOKEN)
-ai_analyzer = AIAnalyzer(OPENAI_API_KEY)
+ai_analyzer = AIAnalyzer(OPENAI_API_KEY, OPENAI_BASE_URL)
 logger.info(f"Config loaded. {len(PROJECTS)} project(s) configured.")
 
 

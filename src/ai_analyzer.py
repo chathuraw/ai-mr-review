@@ -3,9 +3,10 @@ import json
 from openai import OpenAI
 
 class AIAnalyzer:
-    def __init__(self, api_key: str):
-        print("OPEN AI : ", api_key)
-        self.client = OpenAI(api_key=api_key)
+    def __init__(self, api_key: str, base_url: str | None = None):
+        if not api_key or api_key.strip() == "":
+            raise ValueError("OpenAI API key is empty. Set 'openai.api_key' in config.json.")
+        self.client = OpenAI(api_key=api_key, base_url=base_url)
 
     def analyze_mr(self, mr_data, mr_diff):
         # Combine code diffs and MR description
