@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from gitlab_client import GitlabClient
 from ai_analyzer import AIAnalyzer
-from utils import create_md_file
 import json
 
 app = FastAPI(title="GitLab MR Review API")
@@ -19,6 +18,16 @@ gitlab_client = GitlabClient(GITLAB_URL, GITLAB_TOKEN)
 ai_analyzer = AIAnalyzer(OPENAI_API_KEY)
 
 
+# Format the review as markdown for the MR comment
+def format_review_comment(mr_data, analysis) -> str:
+    return (
+        f"# Merge Request Review: {mr_data['title']}\n\n"
+        f"**Analysis Summary**: {analysis['summary']}\n\n"
+        f"## Positive Points\n{analysis['positives']}\n\n"
+        f"## Improvement Suggestions\n{analysis['suggestions']}"
+    )
+
+
 # Analyze MRs for all projects
 def analyze_all_projects():
     for project in PROJECTS:
@@ -26,7 +35,8 @@ def analyze_all_projects():
         for mr in mrs:
             mr_data, mr_diff = gitlab_client.get_mr_details(project["id"], mr["iid"])
             analysis = ai_analyzer.analyze_mr(mr_data, mr_diff)
-            create_md_file(project, mr_data, analysis)
+            comment_body = format_review_comment(mr_data, analysis)
+            gitlab_client.post_mr_note(project["id"], mr_data["iid"], comment_body)
 
 
 # REST API Endpoints

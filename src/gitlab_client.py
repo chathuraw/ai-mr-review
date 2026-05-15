@@ -16,3 +16,16 @@ class GitlabClient:
         mr_response.raise_for_status()
         diff_response.raise_for_status()
         return mr_response.json(), diff_response.json()
+
+    def post_mr_note(self, project_id: str, mr_iid: int, body: str):
+        """Post a comment on a merge request.
+
+        See: https://docs.gitlab.com/api/notes/#create-a-merge-request-note
+        """
+        response = requests.post(
+            f"{self.url}/projects/{project_id}/merge_requests/{mr_iid}/notes",
+            headers=self.headers,
+            data={"body": body},
+        )
+        response.raise_for_status()
+        return response.json()
