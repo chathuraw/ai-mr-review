@@ -8,28 +8,28 @@ class AIAnalyzer:
         self.client = OpenAI(api_key=api_key)
 
     def analyze_mr(self, mr_data, mr_diff):
-        # Kod farklarını ve MR açıklamasını birleştir
+        # Combine code diffs and MR description
         diff_text = "\n".join([diff["diff"] for diff in mr_diff])
         prompt = (
-            f"Senior bir yazılım geliştirici olarak aşağıdaki GitLab Merge Request'ı incele:\n"
-            f"MR Başlığı: {mr_data['title']}\n"
-            f"Açıklama: {mr_data['description']}\n"
-            f"Kod Değişiklikleri:\n```diff\n{diff_text}\n```\n"
-            f"Performans, okunabilirlik, hata olasılıkları ve tasarım açısından yorum yap.\n"
-            f"Çıktıyı şu formatta JSON olarak döndür:\n"
-            f'{{"summary": "özet", "positives": "iyi yönler", "suggestions": "iyileştirme önerileri"}}'
+            f"As a senior software developer, review the following GitLab Merge Request:\n"
+            f"MR Title: {mr_data['title']}\n"
+            f"Description: {mr_data['description']}\n"
+            f"Code Changes:\n```diff\n{diff_text}\n```\n"
+            f"Provide feedback on performance, readability, potential bugs, and design.\n"
+            f"Return the output as JSON in the following format:\n"
+            f'{{"summary": "summary", "positives": "positive points", "suggestions": "improvement suggestions"}}'
         )
 
-        # OpenAI ile analiz
+        # Analyze with OpenAI
         response = self.client.chat.completions.create(
-            model="gpt-4o",  # Önerilen model, alternatif: "gpt-3.5-turbo"
+            model="gpt-4o",  # Recommended model, alternative: "gpt-3.5-turbo"
             messages=[
-                {"role": "system", "content": "Kod analizi yapan bir senior developersın."},
+                {"role": "system", "content": "You are a senior developer performing code analysis."},
                 {"role": "user", "content": prompt}
             ],
         )
 
-        # JSON formatında analiz sonucunu al
+        # Get the analysis result in JSON format
         analysis_json = response.choices[0].message.content
         cleaned_analysis_json = analysis_json.strip('`').replace('json\n', '', 1).strip()
 

@@ -1,9 +1,9 @@
-# GitLab MR Review Sistemi (OpenAI ile)
+# GitLab MR Review System (with OpenAI)
 
-Bu proje, GitLab Merge Request'larını analiz eder, OpenAI kullanarak senior developer seviyesinde yorumlar üretir ve sonuçları Markdown dosyalarına kaydeder. REST API ile projeleri, MR'ları ve analiz sonuçlarını görebilirsiniz.
+This project analyzes GitLab Merge Requests, generates senior developer-level reviews using OpenAI, and saves the results to Markdown files. You can view projects, MRs, and analysis results via a REST API.
 
-## Kurulum
+## Setup
 
-1. **Gereksinimleri Yükleyin**:
+1. **Install Dependencies**:
    ```bash
    pip install -r requirements.txt

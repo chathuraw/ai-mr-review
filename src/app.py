@@ -6,7 +6,7 @@ import json
 
 app = FastAPI(title="GitLab MR Review API")
 
-# Config dosyasını yükleme
+# Load config file
 with open("../config.json", "r") as f:
     CONFIG = json.load(f)
 
@@ -19,7 +19,7 @@ gitlab_client = GitlabClient(GITLAB_URL, GITLAB_TOKEN)
 ai_analyzer = AIAnalyzer(OPENAI_API_KEY)
 
 
-# Tüm projelerin MR'larını analiz etme
+# Analyze MRs for all projects
 def analyze_all_projects():
     for project in PROJECTS:
         mrs = gitlab_client.get_open_mrs(project["id"])
@@ -29,7 +29,7 @@ def analyze_all_projects():
             create_md_file(project, mr_data, analysis)
 
 
-# REST API Endpoint'leri
+# REST API Endpoints
 @app.get("/projects")
 def list_projects():
     return {"projects": [{"name": p["name"], "id": p["id"]} for p in PROJECTS]}
@@ -39,7 +39,7 @@ def list_projects():
 def list_mrs(project_name: str):
     project = next((p for p in PROJECTS if p["name"] == project_name), None)
     if not project:
-        raise HTTPException(status_code=404, detail="Proje bulunamadı")
+        raise HTTPException(status_code=404, detail="Project not found")
     mrs = gitlab_client.get_open_mrs(project["id"])
     return {"mrs": [{"iid": mr["iid"], "title": mr["title"], "web_url": mr["web_url"]} for mr in mrs]}
 
@@ -48,7 +48,7 @@ def list_mrs(project_name: str):
 def list_reviews(project_name: str):
     project = next((p for p in PROJECTS if p["name"] == project_name), None)
     if not project:
-        raise HTTPException(status_code=404, detail="Proje bulunamadı")
+        raise HTTPException(status_code=404, detail="Project not found")
 
     import os
     reviews = []
